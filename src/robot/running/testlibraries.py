@@ -14,7 +14,6 @@
 
 import os
 import inspect
-import pdb
 
 from robot import utils
 from robot.errors import DataError
@@ -59,40 +58,6 @@ def _get_dynamic_method(code, underscore_name):
             if callable(method):
                 return method
     return None
-
-def simple_decorator(decorator):
-    """This decorator can be used to turn simple functions
-    into well-behaved decorators, so long as the decorators
-    are fairly simple. If a decorator expects a function and
-    returns a function (no descriptors), and if it doesn't
-    modify function attributes or docstring, then it is
-    eligible to use this. Simply apply @simple_decorator to
-    your decorator and it will automatically preserve the
-    docstring and function attributes of functions to which
-    it is applied."""
-    def new_decorator(f):
-        g = decorator(f)
-        g.__name__ = f.__name__
-        g.__doc__ = f.__doc__
-        g.__dict__.update(f.__dict__)
-        return g
-    # Now a few lines needed to make simple_decorator itself
-    # be a well-behaved decorator.
-    new_decorator.__name__ = decorator.__name__
-    new_decorator.__doc__ = decorator.__doc__
-    new_decorator.__dict__.update(decorator.__dict__)
-    return new_decorator
-    
-@simple_decorator
-def _func_inverter(fn):
-    def inverted_fn(*args, **kwargs):
-        try:
-            fn(*args,**kwargs)
-        except:
-            return None
-        raise Exception('Test was successful. It was supposed to fail.')
-    return inverted_fn
-
 
 
 class _BaseTestLibrary(BaseLibrary):
@@ -193,7 +158,6 @@ class _BaseTestLibrary(BaseLibrary):
             self._raise_creating_instance_failed()
 
     def _create_handlers(self, libinst):
-        #if self.name == 'RemoteB': pdb.set_trace()
         success, failure, details = self._get_reporting_methods()
         handlers = utils.NormalizedDict(ignore=['_'])
         for name in self._get_handler_names(libinst):
@@ -212,11 +176,6 @@ class _BaseTestLibrary(BaseLibrary):
             try:
                 handlers[name] = self._create_handler(name, method)
                 success("Created keyword '%s'" % handlers[name].name)
-
-                # Create the 'intended failure' handler
-                FAILURE_PREFIX = 'failed_'
-                handlers[FAILURE_PREFIX + name] = self._create_handler(name, _func_inverter(method))
-                success("Created keyword '%s'" % handlers[FAILURE_PREFIX + name].name)
             except:
                 err_msg, err_details = utils.get_error_details()
                 failure(err_pre + 'Creating keyword failed: ' + err_msg)
