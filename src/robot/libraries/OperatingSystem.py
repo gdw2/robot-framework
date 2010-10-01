@@ -1243,8 +1243,9 @@ class _Process:
         return self._encode_to_file_system(command)
 
     def _encode_to_file_system(self, string):
-        enc = sys.getfilesystemencoding()
-        return string.encode(enc) if enc else string
+        return string
+        #enc = sys.getfilesystemencoding()
+        #return string.encode(enc) if enc else string
 
     def _process_output(self, stdout):
         stdout = stdout.replace('\r\n', '\n') # http://bugs.jython.org/issue1566
