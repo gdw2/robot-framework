@@ -122,11 +122,11 @@ class _RunnableHandler(_BaseHandler):
         return lambda: handler(*positional, **named)
 
     def _run_with_output_captured_and_signal_monitor(self, runner, context):
-        capturer = OutputCapturer()
+        #capturer = OutputCapturer()
         try:
             return self._run_with_signal_monitoring(runner, context)
         finally:
-            stdout, stderr = capturer.release()
+            stdout, stderr = "",""#capturer.release()
             context.output.log_output(stdout)
             context.output.log_output(stderr)
             if stderr:
@@ -190,13 +190,15 @@ class _DynamicHandler(_RunnableHandler):
         self._argspec = argspec
         _RunnableHandler.__init__(self, library, handler_name, handler_method)
         self._run_keyword_method_name = handler_method.__name__
+        self._gdw_runner = handler_method
         self.doc = doc is not None and utils.unic(doc) or ''
 
     def _parse_arguments(self, handler_method):
         return DynamicKeywordArguments(self._argspec, self.longname)
 
     def _get_handler(self, lib_instance, handler_name):
-        runner = getattr(lib_instance, self._run_keyword_method_name)
+        #runner = getattr(lib_instance, self._run_keyword_method_name)
+        runner = self._gdw_runner
         return self._get_dynamic_handler(runner, handler_name)
 
     def _get_global_handler(self, method, name):
